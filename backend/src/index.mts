@@ -2,6 +2,11 @@ import express, { json } from "express";
 import cors from "cors";
 import { toPlayRouter } from "./routes/toPlayRouter.mjs";
 import mongoose from "mongoose";
+import { config } from "dotenv";
+
+config();
+
+const mongoURI = process.env.MONGO_URI || "";
 
 const app = express();
 
@@ -21,9 +26,7 @@ app.listen(3000, async (error) => {
       console.error(error);
     }
 
-    await mongoose.connect(
-      "mongodb+srv://IngridStanic:E92favIfam94Alav23se@cluster0.c65ojxz.mongodb.net/toPlay?appName=Cluster0",
-    );
+    await mongoose.connect(mongoURI);
     console.log(
       "API is up and running on port: 3000, connected to the database.",
     );
