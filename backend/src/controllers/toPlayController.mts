@@ -1,13 +1,14 @@
 import { Game } from "../models/Game.mjs";
 import QueryString from "qs";
+import { GameModel } from "../models/GameSchema.mjs";
 
-export const gameList: Game[] = [
-  new Game(1, "Kingdom Come Deliverance II"),
-  new Game(2, "Red Dead Redemption 2"),
-  new Game(3, "Grand Theft Auto V"),
-];
+// export const gameList: Game[] = [
+//   new Game(1, "Kingdom Come Deliverance II"),
+//   new Game(2, "Red Dead Redemption 2"),
+//   new Game(3, "Grand Theft Auto V"),
+// ];
 
-export const getGames = (
+export const getGames = async (
   search:
     | string
     | QueryString.ParsedQs
@@ -19,20 +20,30 @@ export const getGames = (
     | (string | QueryString.ParsedQs)[]
     | undefined,
 ) => {
+  const gameList = await GameModel.find();
   let filteredList = [...gameList];
 
   if (search) {
     filteredList = filteredList.filter((game) =>
-      game.title.toLocaleLowerCase().startsWith(search as string),
+      game.title?.toLocaleLowerCase().startsWith(search as string),
     );
   }
 
   if (sort) {
     if ((sort as string) === "asc") {
       filteredList.sort((a, b) => {
-        if (a.title.toLocaleLowerCase() < b.title.toLocaleLowerCase())
+        if (
+          a.title &&
+          b.title &&
+          a.title.toLocaleLowerCase() < b.title.toLocaleLowerCase()
+        )
           return -1;
-        if (a.title.toLocaleLowerCase() > b.title.toLocaleLowerCase()) return 1;
+        if (
+          a.title &&
+          b.title &&
+          a.title.toLocaleLowerCase() > b.title.toLocaleLowerCase()
+        )
+          return 1;
         return 0;
       });
     }
@@ -41,35 +52,28 @@ export const getGames = (
   return filteredList;
 };
 
-export const getGame = (id: string) => {
-  return gameList.find((game) => game.id === +id);
-};
+export const getGame = async (id: string) =>
+  await GameModel.findOne({ id: +id });
 
-export const createGame = (game: string) => {
+export const createGame = async (game: string) => {
   const newGame = new Game(Date.now(), game);
 
-  gameList.push(newGame);
+  const createdGame = await GameModel.create(newGame);
 
-  return newGame;
+  return createdGame;
 };
 
-export const deleteGame = (id: string) => {
-  const index = gameList.findIndex((game) => game.id === +id);
+export const deleteGame = async (id: string) => {
+  const deletedGame = await GameModel.findOneAndDelete({ id: +id });
 
-  if (index >= 0) {
-    gameList.splice(index, 1);
+  if (deletedGame) {
     return true;
   }
   return false;
 };
 
-export const patchGame = (game: Game) => {
-  const found = gameList.find((g) => g.id === game.id);
+export const patchGame = async (game: Game) => {
+  await GameModel.findOneAndUpdate({ id: game.id }, game);
 
-  if (found) {
-    found.played = game.played;
-    found.title = game.title;
-  }
-
-  return found;
+  return game;
 };

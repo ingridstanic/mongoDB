@@ -11,10 +11,10 @@ import type { Game } from "../models/Game.mjs";
 export const toPlayRouter = express.Router();
 
 //read - GET /toplay
-toPlayRouter.get("/", (req, res) => {
+toPlayRouter.get("/", async (req, res) => {
   try {
     const { search, sort } = req.query;
-    const games = getGames(search, sort);
+    const games = await getGames(search, sort);
 
     res.status(200).json(games);
   } catch (error) {
@@ -24,11 +24,11 @@ toPlayRouter.get("/", (req, res) => {
 });
 
 //read - GET /toplay/1
-toPlayRouter.get("/:id", (req, res) => {
+toPlayRouter.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    const game = getGame(id);
+    const game = await getGame(id);
 
     if (game) {
       res.status(200).json(game);
@@ -42,12 +42,12 @@ toPlayRouter.get("/:id", (req, res) => {
 });
 
 //create - POST - /toplay
-toPlayRouter.post("/", (req, res) => {
+toPlayRouter.post("/", async (req, res) => {
   try {
     const { gameTitle } = req.body;
 
     if (gameTitle && gameTitle !== "") {
-      const newGame = createGame(gameTitle);
+      const newGame = await createGame(gameTitle);
 
       res.status(201).json(newGame);
     } else {
@@ -62,10 +62,10 @@ toPlayRouter.post("/", (req, res) => {
 });
 
 //delete - /toplay/:id
-toPlayRouter.delete("/:id", (req, res) => {
+toPlayRouter.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const success = deleteGame(id);
+    const success = await deleteGame(id);
 
     if (success) {
       res.status(204).json();
@@ -79,7 +79,7 @@ toPlayRouter.delete("/:id", (req, res) => {
 });
 
 // update - PATCH/PUT /toplay/:id - body
-toPlayRouter.patch("/:id", (req, res) => {
+toPlayRouter.patch("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { game }: { game: Game } = req.body;
@@ -87,7 +87,7 @@ toPlayRouter.patch("/:id", (req, res) => {
     if (+id !== game.id) {
       res.status(400).json({ message: "Parameter and body does not match" });
     } else {
-      const found = patchGame(game);
+      const found = await patchGame(game);
 
       if (found) {
         res.status(200).json(found);
